@@ -49,7 +49,9 @@ Rules that match the QA lead's style:
 - Always **number** the repro steps. One action per step.
 - Always set **severity** and **environment** on a bug.
 - Put stack traces / "how it should behave technically" in **error_text**, not the body.
-- Screenshots: call `upload_screenshot` first, feed the returned URL into `attachment_urls`.
+- Screenshots: when the user pastes/points to an image, call `upload_screenshot(<file path>)`
+  first, then feed the returned URL into `attachment_urls`. (Pasted images are saved
+  to disk by Claude — use that path.)
 - If the user is vague, ask ONLY for the missing slot(s) — don't re-ask what they gave.
 
 Filing a **task** instead of a bug → `create_task` (title, description, priority, effort).
@@ -59,6 +61,10 @@ Filing a **task** instead of a bug → `create_task` (title, description, priori
 1. `list_my_tickets(statuses=["todo","in_progress"])` → pick the card.
 2. `get_ticket(<id>)` → read Problem/Steps/Expected/Actual + error_text + attachments.
    Start work directly from those slots.
+   - **Screenshots**: the card lists attachment URLs. To actually *see* one, call
+     `get_attachment(<url>)` (downloads it local) then open the returned path with
+     the **Read** tool. Only fetch attachments when the visual matters — don't
+     pull every image reflexively.
 3. Moving the card: `move_status(id, "in_progress")` → after deploy `move_status(id, "dev_pushed")`, etc.
 4. Need to ask QA something → `comment(id, body, mention_ids=[<qa id>])`.
 

@@ -18,8 +18,10 @@ Run:  python server.py   (stdio MCP; register in Claude Code config)
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
+import tempfile
 from pathlib import Path
 from typing import Optional
 
@@ -349,6 +351,27 @@ def comment(task_id: int, body: str, mention_ids: Optional[list[int]] = None) ->
     payload = {"body": body, "mentioned_user_ids": mention_ids or []}
     c = api().json("POST", f"/tech-tasks/{task_id}/comments", json=payload)["data"]
     return f"commented on #{task_id} (comment {c.get('id')})."
+
+
+@mcp.tool()
+def get_attachment(url: str) -> str:
+    """Download a ticket attachment (image) to a local file and return its path.
+
+    Dev read-flow: `get_ticket` lists attachment URLs; call this on one to pull
+    it local, then open the returned path with the Read tool to actually SEE the
+    screenshot. Public CDN URL — no auth needed. Cached by URL, so re-calling is
+    cheap and won't re-download.
+    """
+    r = httpx.get(url, timeout=30.0, follow_redirects=True)
+    if r.status_code >= 400:
+        raise RuntimeError(f"download failed {r.status_code}: {url}")
+    ext = os.path.splitext(url.split("?")[0])[1] or ".png"
+    name = hashlib.sha1(url.encode()).hexdigest()[:16] + ext
+    cache = Path(tempfile.gettempdir()) / "lead_engine_attachments"
+    cache.mkdir(parents=True, exist_ok=True)
+    p = cache / name
+    p.write_bytes(r.content)
+    return str(p)
 
 
 @mcp.tool()

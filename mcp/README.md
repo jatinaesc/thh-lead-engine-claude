@@ -33,8 +33,11 @@ Or add to your MCP config manually:
 
 ## Tools
 
-**Read** (cheap): `list_my_tickets`, `list_tickets`, `get_ticket`, `list_users`
+**Read** (cheap): `list_my_tickets`, `list_tickets`, `get_ticket`, `list_users`, `get_attachment`
 **Write**: `create_bug`, `create_task`, `move_status`, `assign`, `add_qa_remark`, `comment`, `upload_screenshot`
+
+`get_attachment(url)` downloads a ticket screenshot local so Claude can Read/view it.
+`upload_screenshot(path)` uploads an image and returns a URL for `attachment_urls`.
 
 Output is compact text with int-enums decoded to labels — no raw JSON — so reads
 stay token-light. Two-step read: `list_*` returns a thin list, `get_ticket`
